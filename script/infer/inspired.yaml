@@ -1,0 +1,81 @@
+n_process: 32
+log_file_dir: log/infer/inspired
+result_file_dir: result/infer/inspired
+
+task_param:
+  type: inspired
+  config:
+    only_new: true
+    fuzzy_scorer: QRatio
+    data_file_path: dataset/inspired/test_data_processed.jsonl
+    item_file_path: dataset/inspired/movie2info.json
+    # data_size: 2
+
+model_param:
+  - type: litellm_model
+    config:
+      model_list_file_path: script/serve/litellm/inspired_rec.yaml
+      model_name: rec_model
+  - type: litellm_model
+    config:
+      model_list_file_path: script/serve/litellm/inspired_user.yaml
+      model_name: user_model
+
+search_algo_param:
+  type: beam_search_algo
+  config:
+    num_beams: 4
+    max_depth: 5
+    num_reward_on_output: 1
+    num_candidate_for_reward: 1
+    output_strategy:
+      - source: item_all_reward
+        aggregation: mean
+      - source: item_all_reward
+        aggregation: sum
+      - source: item_all_vote
+        aggregation: sum
+
+actor_param:
+  type: actor_in_domain_feedback
+  config:
+    n: 4
+
+rec_model_param:
+  type: rec_model
+  config:
+    k: 10
+    model_name: rec_model
+    sampling_params:
+      temperature: 1
+      max_tokens: 256
+
+user_model_param:
+  type: generative_user_model
+  config:
+    feedback_params:
+      type: negative
+      model_name: user_model
+      sampling_params:
+        temperature: 1
+        max_tokens: 1024
+    reward_params:
+      type: relevance
+      model_name: user_model
+      prompt_type: reward_no-cot
+      sampling_params:
+        logprobs: true
+        n: 1
+        temperature: 0
+        seed: 42
+        max_tokens: 64
+    score_params:
+      type: no-candidate
+      model_name: user_model
+      prompt_type: reward_no-cot
+      sampling_params:
+        logprobs: true
+        n: 1
+        temperature: 0
+        seed: 42
+        max_tokens: 64

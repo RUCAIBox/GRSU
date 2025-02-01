@@ -1,0 +1,10 @@
+- model_name: user_model
+  litellm_params:
+    model: openai/[model]
+    api_key: EMPTY
+    api_base: http://127.0.0.1:[port]/v1
+- model_name: user_model
+  litellm_params:
+    model: openai/[model]
+    api_key: EMPTY
+    api_base: http://127.0.0.1:[port]/v1
